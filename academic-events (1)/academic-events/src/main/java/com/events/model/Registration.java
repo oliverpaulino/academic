@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "registrations",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"event_id", "user_id"}))
+@Table(name = "registrations", uniqueConstraints = @UniqueConstraint(columnNames = { "event_id", "user_id" }))
 public class Registration {
 
     @Id
@@ -31,49 +30,107 @@ public class Registration {
     @Column(nullable = false)
     private LocalDateTime registeredAt;
 
-    public Registration() {}
+    public Registration() {
+    }
 
     @PrePersist
     protected void onCreate() {
-        if (registeredAt == null) registeredAt = LocalDateTime.now();
+        if (registeredAt == null)
+            registeredAt = LocalDateTime.now();
     }
 
-    // Getters
-    public Long          getId()           { return id; }
-    public Event         getEvent()        { return event; }
-    public User          getUser()         { return user; }
-    public String        getToken()        { return token; }
-    public boolean       isAttended()      { return attended; }
-    public LocalDateTime getAttendedAt()   { return attendedAt; }
-    public LocalDateTime getRegisteredAt() { return registeredAt; }
+    public Long getId() {
+        return id;
+    }
 
-    // Setters
-    public void setId(Long v)                  { this.id = v; }
-    public void setEvent(Event v)              { this.event = v; }
-    public void setUser(User v)                { this.user = v; }
-    public void setToken(String v)             { this.token = v; }
-    public void setAttended(boolean v)         { this.attended = v; }
-    public void setAttendedAt(LocalDateTime v) { this.attendedAt = v; }
-    public void setRegisteredAt(LocalDateTime v){ this.registeredAt = v; }
+    public Event getEvent() {
+        return event;
+    }
 
-    // Builder
-    public static Builder builder() { return new Builder(); }
+    public User getUser() {
+        return user;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public boolean isAttended() {
+        return attended;
+    }
+
+    public LocalDateTime getAttendedAt() {
+        return attendedAt;
+    }
+
+    public LocalDateTime getRegisteredAt() {
+        return registeredAt;
+    }
+
+    public void setId(Long v) {
+        this.id = v;
+    }
+
+    public void setEvent(Event v) {
+        this.event = v;
+    }
+
+    public void setUser(User v) {
+        this.user = v;
+    }
+
+    public void setToken(String v) {
+        this.token = v;
+    }
+
+    public void setAttended(boolean v) {
+        this.attended = v;
+    }
+
+    public void setAttendedAt(LocalDateTime v) {
+        this.attendedAt = v;
+    }
+
+    public void setRegisteredAt(LocalDateTime v) {
+        this.registeredAt = v;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
 
     public static final class Builder {
-        private Event   event;
-        private User    user;
-        private String  token;
+        private Event event;
+        private User user;
+        private String token;
         private boolean attended = false;
 
-        public Builder event(Event v)      { this.event = v;    return this; }
-        public Builder user(User v)        { this.user = v;     return this; }
-        public Builder token(String v)     { this.token = v;    return this; }
-        public Builder attended(boolean v) { this.attended = v; return this; }
+        public Builder event(Event v) {
+            this.event = v;
+            return this;
+        }
+
+        public Builder user(User v) {
+            this.user = v;
+            return this;
+        }
+
+        public Builder token(String v) {
+            this.token = v;
+            return this;
+        }
+
+        public Builder attended(boolean v) {
+            this.attended = v;
+            return this;
+        }
 
         public Registration build() {
             Registration r = new Registration();
-            r.event = event; r.user = user;
-            r.token = token; r.attended = attended;
+            r.event = event;
+            r.user = user;
+            r.token = token;
+            r.attended = attended;
             return r;
         }
     }

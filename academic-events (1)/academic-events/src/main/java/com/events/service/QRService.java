@@ -16,7 +16,6 @@ public class QRService {
 
     private static final int QR_SIZE = 300;
 
-    /** Genera QR PNG con contenido: EVENT:{id}|USER:{id}|TOKEN:{uuid} */
     public static byte[] generateQR(Long eventId, Long userId, String token) {
         String content = String.format("EVENT:%d|USER:%d|TOKEN:%s", eventId, userId, token);
         return generateQRFromString(content);
@@ -26,10 +25,9 @@ public class QRService {
         try {
             QRCodeWriter writer = new QRCodeWriter();
             Map<EncodeHintType, Object> hints = Map.of(
-                EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H,
-                EncodeHintType.MARGIN, 1,
-                EncodeHintType.CHARACTER_SET, "UTF-8"
-            );
+                    EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H,
+                    EncodeHintType.MARGIN, 1,
+                    EncodeHintType.CHARACTER_SET, "UTF-8");
             BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, QR_SIZE, QR_SIZE, hints);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(matrix, "PNG", baos);
@@ -39,11 +37,12 @@ public class QRService {
         }
     }
 
-    /** Extrae el token del contenido del QR: EVENT:{id}|USER:{id}|TOKEN:{uuid} */
     public static String extractToken(String qrContent) {
-        if (qrContent == null) return null;
+        if (qrContent == null)
+            return null;
         for (String part : qrContent.split("\\|")) {
-            if (part.startsWith("TOKEN:")) return part.substring(6);
+            if (part.startsWith("TOKEN:"))
+                return part.substring(6);
         }
         return null;
     }

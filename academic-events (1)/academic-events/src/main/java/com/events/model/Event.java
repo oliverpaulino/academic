@@ -37,38 +37,92 @@ public class Event {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    public Event() {}
+    public Event() {
+    }
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
-        if (status == null) status = EventStatus.DRAFT;
+        if (createdAt == null)
+            createdAt = LocalDateTime.now();
+        if (status == null)
+            status = EventStatus.DRAFT;
     }
 
-    // Getters
-    public Long          getId()          { return id; }
-    public String        getTitle()       { return title; }
-    public String        getDescription() { return description; }
-    public LocalDateTime getDateTime()    { return dateTime; }
-    public String        getLocation()    { return location; }
-    public int           getMaxCapacity() { return maxCapacity; }
-    public EventStatus   getStatus()      { return status; }
-    public User          getCreatedBy()   { return createdBy; }
-    public LocalDateTime getCreatedAt()   { return createdAt; }
+    public Long getId() {
+        return id;
+    }
 
-    // Setters
-    public void setId(Long v)                  { this.id = v; }
-    public void setTitle(String v)             { this.title = v; }
-    public void setDescription(String v)       { this.description = v; }
-    public void setDateTime(LocalDateTime v)   { this.dateTime = v; }
-    public void setLocation(String v)          { this.location = v; }
-    public void setMaxCapacity(int v)          { this.maxCapacity = v; }
-    public void setStatus(EventStatus v)       { this.status = v; }
-    public void setCreatedBy(User v)           { this.createdBy = v; }
-    public void setCreatedAt(LocalDateTime v)  { this.createdAt = v; }
+    public String getTitle() {
+        return title;
+    }
 
-    // Builder
-    public static Builder builder() { return new Builder(); }
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public int getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public EventStatus getStatus() {
+        return status;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setId(Long v) {
+        this.id = v;
+    }
+
+    public void setTitle(String v) {
+        this.title = v;
+    }
+
+    public void setDescription(String v) {
+        this.description = v;
+    }
+
+    public void setDateTime(LocalDateTime v) {
+        this.dateTime = v;
+    }
+
+    public void setLocation(String v) {
+        this.location = v;
+    }
+
+    public void setMaxCapacity(int v) {
+        this.maxCapacity = v;
+    }
+
+    public void setStatus(EventStatus v) {
+        this.status = v;
+    }
+
+    public void setCreatedBy(User v) {
+        this.createdBy = v;
+    }
+
+    public void setCreatedAt(LocalDateTime v) {
+        this.createdAt = v;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
 
     public static final class Builder {
         private String title, description, location;
@@ -77,19 +131,50 @@ public class Event {
         private EventStatus status;
         private User createdBy;
 
-        public Builder title(String v)            { this.title = v;        return this; }
-        public Builder description(String v)      { this.description = v;  return this; }
-        public Builder dateTime(LocalDateTime v)  { this.dateTime = v;     return this; }
-        public Builder location(String v)         { this.location = v;     return this; }
-        public Builder maxCapacity(int v)         { this.maxCapacity = v;  return this; }
-        public Builder status(EventStatus v)      { this.status = v;       return this; }
-        public Builder createdBy(User v)          { this.createdBy = v;    return this; }
+        public Builder title(String v) {
+            this.title = v;
+            return this;
+        }
+
+        public Builder description(String v) {
+            this.description = v;
+            return this;
+        }
+
+        public Builder dateTime(LocalDateTime v) {
+            this.dateTime = v;
+            return this;
+        }
+
+        public Builder location(String v) {
+            this.location = v;
+            return this;
+        }
+
+        public Builder maxCapacity(int v) {
+            this.maxCapacity = v;
+            return this;
+        }
+
+        public Builder status(EventStatus v) {
+            this.status = v;
+            return this;
+        }
+
+        public Builder createdBy(User v) {
+            this.createdBy = v;
+            return this;
+        }
 
         public Event build() {
             Event e = new Event();
-            e.title = title; e.description = description; e.dateTime = dateTime;
-            e.location = location; e.maxCapacity = maxCapacity;
-            e.status = status; e.createdBy = createdBy;
+            e.title = title;
+            e.description = description;
+            e.dateTime = dateTime;
+            e.location = location;
+            e.maxCapacity = maxCapacity;
+            e.status = status;
+            e.createdBy = createdBy;
             return e;
         }
     }
