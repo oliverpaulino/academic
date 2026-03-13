@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro - Eventos Académicos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    body{background:linear-gradient(135deg,#1a237e,#3949ab);min-height:100vh;display:flex;align-items:center;justify-content:center}
+    .card{border:none;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+    .btn-primary{background:#1a237e;border-color:#1a237e}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card p-5">
+        <div class="text-center mb-4">
+          <i class="bi bi-mortarboard-fill" style="font-size:2.5rem;color:#1a237e"></i>
+          <h3 class="fw-bold mt-2">Crear Cuenta</h3>
+          <p class="text-muted">Regístrate como participante</p>
+        </div>
+        <div id="alert" class="d-none alert"></div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Usuario *</label>
+          <input type="text" id="username" class="form-control" placeholder="Ej: juan.perez"/>
+          <div id="e-u" class="text-danger small mt-1 d-none"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Correo electrónico *</label>
+          <input type="email" id="email" class="form-control" placeholder="correo@pucmm.edu.do"/>
+          <div id="e-e" class="text-danger small mt-1 d-none"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Contraseña *</label>
+          <input type="password" id="password" class="form-control" placeholder="Mínimo 6 caracteres"/>
+          <div class="progress mt-1" style="height:4px"><div id="pwdBar" class="progress-bar" style="width:0%"></div></div>
+          <div id="e-p" class="text-danger small mt-1 d-none"></div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Confirmar contraseña *</label>
+          <input type="password" id="confirm" class="form-control"/>
+          <div id="e-c" class="text-danger small mt-1 d-none"></div>
+        </div>
+        <button class="btn btn-primary w-100 py-2 fw-bold" onclick="doRegister()">
+          <span id="spin" class="spinner-border spinner-border-sm d-none me-2"></span>Registrarse
+        </button>
+        <hr class="my-4"/>
+        <p class="text-center mb-0">¿Ya tienes cuenta? <a href="login.html" class="text-decoration-none fw-bold">Inicia sesión</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('password').addEventListener('input', function() {
+    const v=this.value, b=document.getElementById('pwdBar');
+    let s=0; if(v.length>=6)s+=25; if(v.length>=10)s+=25; if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s+=25; if(/[0-9!@#$%]/.test(v))s+=25;
+    b.style.width=s+'%'; b.className='progress-bar '+(s<50?'bg-danger':s<75?'bg-warning':'bg-success');
+  });
+  function fe(id,msg){document.getElementById(id).classList.remove('d-none');document.getElementById(id).textContent=msg;return false;}
+  function clearE(){['e-u','e-e','e-p','e-c'].forEach(id=>{document.getElementById(id).classList.add('d-none');});document.getElementById('alert').className='d-none alert';}
+  async function doRegister() {
+    clearE();
+    const username=document.getElementById('username').value.trim(),email=document.getElementById('email').value.trim(),
+          password=document.getElementById('password').value,confirm=document.getElementById('confirm').value;
+    let v=true;
+    if(!username||username.length<3) v=fe('e-u','Mínimo 3 caracteres');
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) v=fe('e-e','Email inválido');
+    if(password.length<6) v=fe('e-p','Mínimo 6 caracteres');
+    if(password!==confirm) v=fe('e-c','Las contraseñas no coinciden');
+    if(!v) return;
+    document.getElementById('spin').classList.remove('d-none');
+    try {
+      const res=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,email,password}),credentials:'include'});
+      const data=await res.json();
+      if(res.ok){location.href='/index.html';}
+      else{const a=document.getElementById('alert');a.className='alert alert-danger';a.textContent=data.error||'Error';}
+    } catch(e){const a=document.getElementById('alert');a.className='alert alert-danger';a.textContent='Error de conexión';}
+    finally{document.getElementById('spin').classList.add('d-none');}
+  }
+</script>
+</body></html>

@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.events'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // ── Javalin 7 bundle (includes Jetty 12, Jackson, SLF4J) ──────────────
+    implementation 'io.javalin:javalin-bundle:7.0.1'
+
+    // ── Hibernate 6 ORM ──────────────────────────────────────────────────
+    implementation 'org.hibernate.orm:hibernate-core:6.4.4.Final'
+
+    // ── H2 Database (server mode) ─────────────────────────────────────────
+    implementation 'com.h2database:h2:2.2.224'
+
+    // ── BCrypt password hashing ───────────────────────────────────────────
+    implementation 'org.mindrot:jbcrypt:0.4'
+
+    // ── ZXing QR Code generation ──────────────────────────────────────────
+    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'com.google.zxing:javase:3.5.3'
+
+    // ── Logging ───────────────────────────────────────────────────────────
+    implementation 'org.slf4j:slf4j-simple:2.0.13'
+}
+
+
+application {
+    mainClass = 'com.events.Main'
+}
+
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+
+compileJava.options.encoding = 'UTF-8'

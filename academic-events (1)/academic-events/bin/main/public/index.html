@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Eventos Académicos PUCMM</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root{--primary:#1a237e}
+    .navbar{background:var(--primary)!important}
+    .hero{background:linear-gradient(135deg,var(--primary),#3949ab);color:white;padding:60px 0}
+    .event-card{transition:transform .2s,box-shadow .2s;border-radius:12px;border:none}
+    .event-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.15)}
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/index.html"><i class="bi bi-mortarboard-fill me-2"></i>Eventos PUCMM</a>
+    <div class="d-flex align-items-center gap-2" id="navButtons"><div class="spinner-border spinner-border-sm text-light"></div></div>
+  </div>
+</nav>
+<section class="hero">
+  <div class="container text-center">
+    <h1 class="display-5 fw-bold"><i class="bi bi-calendar-event me-3"></i>Eventos Académicos</h1>
+    <p class="lead opacity-75">Charlas · Talleres · Seminarios · Congresos</p>
+    <div class="col-md-6 mx-auto mt-3">
+      <input id="searchInput" type="search" class="form-control form-control-lg" placeholder="🔍 Buscar eventos..."/>
+    </div>
+  </div>
+</section>
+<div class="container my-5">
+  <div id="alert" class="d-none alert"></div>
+  <div class="row mb-4 align-items-center">
+    <div class="col"><h4 class="fw-bold mb-0"><i class="bi bi-grid-3x3-gap me-2"></i>Eventos Disponibles</h4></div>
+    <div class="col-auto">
+      <select id="filterStatus" class="form-select" onchange="renderEvents()">
+        <option value="">Todos</option><option value="PUBLISHED">Publicados</option>
+        <option value="DRAFT">Borradores</option><option value="CANCELLED">Cancelados</option>
+      </select>
+    </div>
+  </div>
+  <div id="eventsContainer"><div class="text-center py-5"><div class="spinner-border text-primary" style="width:3rem;height:3rem"></div></div></div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content rounded-4">
+      <div class="modal-header text-white rounded-top-4" style="background:#1a237e">
+        <h5 class="modal-title fw-bold" id="modalTitle"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let allEvents=[], currentUser=null;
+async function init(){
+  try{const r=await fetch('/api/auth/me',{credentials:'include'});if(r.ok)currentUser=await r.json();}catch(e){}
+  renderNav(); loadEvents();
+}
+function renderNav(){
+  const nav=document.getElementById('navButtons');
+  if(currentUser){
+    const c={ADMIN:'danger',ORGANIZER:'warning',PARTICIPANT:'success'}[currentUser.role];
+    nav.innerHTML=`<span class="badge bg-${c}">${currentUser.role}</span>
+      <span class="text-light">Hola, <strong>${currentUser.username}</strong></span>
+      ${currentUser.role==='ORGANIZER'?'<a href="/dashboard.html" class="btn btn-outline-light btn-sm">Dashboard</a>':''}
+      ${currentUser.role==='ADMIN'?'<a href="/admin.html" class="btn btn-outline-light btn-sm">Admin</a>':''}
+      <a href="/my-registrations.html" class="btn btn-outline-light btn-sm">Mis Eventos</a>
+      <button class="btn btn-outline-light btn-sm" onclick="logout()">Salir</button>`;
+  } else {
+    nav.innerHTML='<a href="/login.html" class="btn btn-outline-light btn-sm">Iniciar Sesión</a><a href="/register.html" class="btn btn-light btn-sm fw-bold">Registrarse</a>';
+  }
+}
+async function loadEvents(){
+  const r=await fetch('/api/events',{credentials:'include'});
+  allEvents=await r.json();
+  document.getElementById('searchInput').addEventListener('input',renderEvents);
+  renderEvents();
+}
+function renderEvents(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const sf=document.getElementById('filterStatus').value;
+  const filtered=allEvents.filter(e=>(e.title.toLowerCase().includes(q)||e.description.toLowerCase().includes(q)||e.location.toLowerCase().includes(q))&&(!sf||e.status===sf));
+  const c=document.getElementById('eventsContainer');
+  if(!filtered.length){c.innerHTML='<div class="text-center py-5 text-muted"><i class="bi bi-calendar-x" style="font-size:4rem"></i><p class="mt-3 fs-5">No se encontraron eventos</p></div>';return;}
+  c.innerHTML='<div class="row g-4">'+filtered.map(eventCard).join('')+'</div>';
+}
+function eventCard(e){
+  const sb={PUBLISHED:'success',DRAFT:'secondary',CANCELLED:'danger'},sl={PUBLISHED:'Publicado',DRAFT:'Borrador',CANCELLED:'Cancelado'};
+  const d=new Date(e.dateTime),full=e.spotsLeft===0;
+  return `<div class="col-md-6 col-lg-4"><div class="card event-card h-100 shadow-sm"><div class="card-body d-flex flex-column">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+      <span class="badge bg-${sb[e.status]}">${sl[e.status]}</span>
+      ${e.isRegistered?'<span class="badge bg-info"><i class="bi bi-check-circle me-1"></i>Inscrito</span>':''}
+    </div>
+    <h5 class="card-title fw-bold">${esc(e.title)}</h5>
+    <p class="card-text text-muted small flex-grow-1">${esc(e.description).substring(0,120)}...</p>
+    <div class="mt-auto">
+      <div class="d-flex gap-3 text-muted small mb-1">
+        <span><i class="bi bi-calendar me-1"></i>${d.toLocaleDateString('es-DO')}</span>
+        <span><i class="bi bi-clock me-1"></i>${d.toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'})}</span>
+      </div>
+      <div class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>${esc(e.location)}</div>
+      <div class="progress mb-2" style="height:6px">
+        <div class="progress-bar ${full?'bg-danger':'bg-success'}" style="width:${Math.round(e.registeredCount/e.maxCapacity*100)}%"></div>
+      </div>
+      <div class="d-flex justify-content-between text-muted small mb-2">
+        <span><i class="bi bi-people me-1"></i>${e.registeredCount}/${e.maxCapacity}</span>
+        <span>${full?'<span class="text-danger">Lleno</span>':'<span class="text-success">'+e.spotsLeft+' lugares</span>'}</span>
+      </div>
+      <button class="btn btn-sm w-100 text-white" style="background:#1a237e" onclick="openEvent(${e.id})">Ver detalles <i class="bi bi-arrow-right ms-1"></i></button>
+    </div>
+  </div></div></div>`;
+}
+async function openEvent(id){
+  const e=allEvents.find(x=>x.id===id); if(!e) return;
+  const d=new Date(e.dateTime),full=e.spotsLeft===0,past=d<new Date();
+  const sb={PUBLISHED:'success',DRAFT:'secondary',CANCELLED:'danger'},sl={PUBLISHED:'Publicado',DRAFT:'Borrador',CANCELLED:'Cancelado'};
+  document.getElementById('modalTitle').textContent=e.title;
+  document.getElementById('modalBody').innerHTML=`
+    <div class="mb-3"><span class="badge bg-${sb[e.status]} fs-6">${sl[e.status]}</span></div>
+    <p class="lead">${esc(e.description)}</p><hr/>
+    <div class="row g-3">
+      <div class="col-md-6"><i class="bi bi-calendar-event text-primary fs-4 me-2"></i><strong>${d.toLocaleDateString('es-DO',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} ${d.toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'})}</strong></div>
+      <div class="col-md-6"><i class="bi bi-geo-alt text-danger fs-4 me-2"></i><strong>${esc(e.location)}</strong></div>
+      <div class="col-md-6"><i class="bi bi-people text-success fs-4 me-2"></i><strong>${e.registeredCount}/${e.maxCapacity} inscritos</strong> ${full?'<span class="badge bg-danger">Lleno</span>':'<span class="badge bg-success">'+e.spotsLeft+' disponibles</span>'}</div>
+      <div class="col-md-6"><i class="bi bi-person text-info fs-4 me-2"></i><strong>${e.createdBy.username}</strong></div>
+    </div>`;
+  const f=document.getElementById('modalFooter');
+  if(currentUser&&e.status==='PUBLISHED'&&!past){
+    if(e.isRegistered){f.innerHTML=`<span class="badge bg-success fs-6 me-auto"><i class="bi bi-check-circle me-1"></i>Ya estás inscrito</span><button class="btn btn-outline-danger" onclick="cancelReg(${e.id})">Cancelar inscripción</button><button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>`;}
+    else if(!full){f.innerHTML=`<button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button><button class="btn btn-success" onclick="registerEvent(${e.id})"><i class="bi bi-check-circle me-1"></i>Inscribirme</button>`;}
+    else{f.innerHTML=`<span class="badge bg-danger fs-6 me-auto">Evento lleno</span><button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>`;}
+  } else if(!currentUser){
+    f.innerHTML=`<a href="/login.html" class="btn btn-primary"><i class="bi bi-box-arrow-in-right me-1"></i>Inicia sesión para inscribirte</a><button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>`;
+  } else {f.innerHTML='<button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>';}
+  new bootstrap.Modal(document.getElementById('eventModal')).show();
+}
+async function registerEvent(id){
+  const r=await fetch('/api/events/'+id+'/register',{method:'POST',credentials:'include'});
+  const d=await r.json();
+  if(r.ok){alert('✅ '+d.registration.user.username+' inscrito correctamente. Revisa "Mis Eventos" para ver tu QR.');bootstrap.Modal.getInstance(document.getElementById('eventModal')).hide();loadEvents();}
+  else{alert('❌ '+d.error);}
+}
+async function cancelReg(id){
+  if(!confirm('¿Cancelar inscripción?')) return;
+  const r=await fetch('/api/events/'+id+'/register',{method:'DELETE',credentials:'include'});
+  const d=await r.json();
+  if(r.ok){bootstrap.Modal.getInstance(document.getElementById('eventModal')).hide();loadEvents();}
+  else{alert('❌ '+d.error);}
+}
+async function logout(){await fetch('/api/auth/logout',{method:'POST',credentials:'include'});location.href='/login.html';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+init();
+</script>
+</body></html>
