@@ -1,7 +1,7 @@
 # ============================================================
 # Stage 1: Build with Gradle
 # ============================================================
-FROM gradle:8.7-jdk17 AS builder
+FROM gradle:8.11-jdk21 AS builder
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN gradle shadowJar --no-daemon -x test
 # ============================================================
 # Stage 2: Runtime — minimal JRE image
 # ============================================================
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
